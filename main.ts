@@ -1,6 +1,7 @@
 import {
   App,
   Editor,
+  EventRef,
   MarkdownView,
   Modal,
   Notice,
@@ -18,6 +19,8 @@ const DEFAULT_SETTINGS: MyPluginSettings = {
 }
 
 export default class MyPlugin extends Plugin {
+  private eventRef: EventRef
+
   settings: MyPluginSettings
   Os: string
 
@@ -25,20 +28,30 @@ export default class MyPlugin extends Plugin {
     this.Os = process.platform
   }
 
+  async getCheckboxData() {
+    const a = document.getElementsByClassName('HyperMD-task-line')
+    console.log(a)
+  }
+
   async rmButtons() {
     const buttons = document.getElementsByClassName(
       'titlebar-button-container mod-right'
     )
+    // TODO - workspace-tab-header-tab-list, sidebar-toggle-button mod-right
 
     Array.prototype.forEach.call(buttons, (button: any) => {
       button.remove()
     })
   }
 
-  async onload() {
+  async onload(): Promise<void> {
     await this.loadSettings()
     this.getOperatingSystem()
     this.rmButtons()
+
+    this.eventRef = this.app.metadataCache.on('changed', () => {
+      console.log('changed')
+    })
 
     // This creates an icon in the left ribbon.
     const ribbonIconEl = this.addRibbonIcon(
@@ -90,7 +103,6 @@ export default class MyPlugin extends Plugin {
 
     // If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
     // Using this function will automatically remove the event listener when this plugin is disabled.
-    this.registerDomEvent(document, 'click', (evt: MouseEvent) => {})
 
     // When registering intervals, this function will automatically clear the interval when the plugin is disabled.
     this.registerInterval(
@@ -98,7 +110,9 @@ export default class MyPlugin extends Plugin {
     )
   }
 
-  onunload() {}
+  onunload(): void {
+    this.app.metadataCache.offref(this.eventRef)
+  }
 
   async loadSettings() {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData())

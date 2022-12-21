@@ -9,8 +9,6 @@ import {
   Setting,
 } from 'obsidian'
 
-// Remember to rename these classes and interfaces!
-
 interface MyPluginSettings {
   mySetting: string
 }
@@ -21,17 +19,33 @@ const DEFAULT_SETTINGS: MyPluginSettings = {
 
 export default class MyPlugin extends Plugin {
   settings: MyPluginSettings
+  Os: string
+
+  async getOperatingSystem() {
+    this.Os = process.platform
+  }
+
+  async rmButtons() {
+    const buttons = document.getElementsByClassName(
+      'titlebar-button-container mod-right'
+    )
+
+    Array.prototype.forEach.call(buttons, (button: any) => {
+      button.remove()
+    })
+  }
 
   async onload() {
     await this.loadSettings()
+    await this.getOperatingSystem()
+    await this.rmButtons()
 
     // This creates an icon in the left ribbon.
     const ribbonIconEl = this.addRibbonIcon(
       'dice',
-      'Sample Plugin',
-      (evt: MouseEvent) => {
-        // Called when the user clicks the icon.
-        new Notice('This is a notice!')
+      'obsidian-sample-plugin',
+      (_evt: MouseEvent) => {
+        new Notice(this.Os)
       }
     )
     // Perform additional things with the ribbon
@@ -39,7 +53,7 @@ export default class MyPlugin extends Plugin {
 
     // This adds a status bar item to the bottom of the app. Does not work on mobile apps.
     const statusBarItemEl = this.addStatusBarItem()
-    statusBarItemEl.setText('Status Bar Text')
+    statusBarItemEl.setText('Status 이거 맞냐 Text')
 
     // This adds a simple command that can be triggered anywhere
     this.addCommand({
@@ -53,7 +67,7 @@ export default class MyPlugin extends Plugin {
     this.addCommand({
       id: 'sample-editor-command',
       name: 'Sample editor command',
-      editorCallback: (editor: Editor, view: MarkdownView) => {
+      editorCallback: (editor: Editor, _view: MarkdownView) => {
         console.log(editor.getSelection())
         editor.replaceSelection('Sample Editor Command')
       },
@@ -84,9 +98,7 @@ export default class MyPlugin extends Plugin {
 
     // If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
     // Using this function will automatically remove the event listener when this plugin is disabled.
-    this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-      console.log('click', evt)
-    })
+    this.registerDomEvent(document, 'click', (evt: MouseEvent) => {})
 
     // When registering intervals, this function will automatically clear the interval when the plugin is disabled.
     this.registerInterval(

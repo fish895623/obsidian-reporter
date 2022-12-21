@@ -24,47 +24,21 @@ export default class MyPlugin extends Plugin {
   settings: MyPluginSettings
   Os: string
 
-  async getOperatingSystem() {
-    this.Os = process.platform
-  }
-
   async getCheckboxData() {
     const a = document.getElementsByClassName('HyperMD-task-line')
     console.log(a)
   }
 
-  async rmButtons() {
-    const buttons = document.getElementsByClassName(
-      'titlebar-button-container mod-right'
-    )
-    // TODO - workspace-tab-header-tab-list, sidebar-toggle-button mod-right
-
-    Array.prototype.forEach.call(buttons, (button: any) => {
-      button.remove()
-    })
-  }
-
   async onload(): Promise<void> {
     await this.loadSettings()
-    this.getOperatingSystem()
-    this.rmButtons()
+    getOperatingSystem(this)
+    rmButtons(this)
+    createRibbon(this)
+    asdf(this)
 
     this.eventRef = this.app.metadataCache.on('changed', () => {
       console.log('changed')
     })
-
-    // This creates an icon in the left ribbon.
-    const ribbonIconEl = this.addRibbonIcon(
-      'dice',
-      'obsidian-sample-plugin',
-      (_evt: MouseEvent) => {
-        new Notice(this.Os)
-      }
-    )
-    ribbonIconEl.addClass('my-plugin-ribbon-class')
-
-    const statusBarItemEl = this.addStatusBarItem()
-    statusBarItemEl.setText('Status 이거 맞냐 Text')
 
     this.addCommand({
       id: 'open-sample-modal-simple',
@@ -98,13 +72,7 @@ export default class MyPlugin extends Plugin {
       },
     })
 
-    // This adds a settings tab so the user can configure various aspects of the plugin
     this.addSettingTab(new SampleSettingTab(this.app, this))
-
-    // If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
-    // Using this function will automatically remove the event listener when this plugin is disabled.
-
-    // When registering intervals, this function will automatically clear the interval when the plugin is disabled.
     this.registerInterval(
       window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000)
     )
@@ -121,6 +89,37 @@ export default class MyPlugin extends Plugin {
   async saveSettings() {
     await this.saveData(this.settings)
   }
+}
+
+const asdf = async (_this: MyPlugin) => {
+  const statusBarItemEl = _this.addStatusBarItem()
+  statusBarItemEl.setText('Status 이거 맞냐 Text')
+}
+
+const createRibbon = async (_this: MyPlugin) => {
+  const ribbonIconEl = _this.addRibbonIcon(
+    'dice',
+    'obsidian-sample-plugin',
+    (_evt: MouseEvent) => {
+      new Notice(_this.Os)
+    }
+  )
+  ribbonIconEl.addClass('my-plugin-ribbon-class')
+}
+
+const rmButtons = async (_this: MyPlugin) => {
+  const buttons = document.getElementsByClassName(
+    'titlebar-button-container mod-right'
+  )
+  // TODO - workspace-tab-header-tab-list, sidebar-toggle-button mod-right
+
+  Array.prototype.forEach.call(buttons, (button: any) => {
+    button.remove()
+  })
+}
+
+const getOperatingSystem = (_this: MyPlugin) => {
+  _this.Os = process.platform
 }
 
 class SampleModal extends Modal {

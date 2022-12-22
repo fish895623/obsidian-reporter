@@ -37,7 +37,7 @@ export default class MyPlugin extends Plugin {
     asdf(this)
 
     this.eventRef = this.app.metadataCache.on('changed', () => {
-      console.log('changed')
+      readFiles(this)
     })
 
     this.addCommand({
@@ -118,8 +118,14 @@ const rmButtons = async (_this: MyPlugin) => {
   })
 }
 
-const getOperatingSystem = (_this: MyPlugin) => {
+const getOperatingSystem = async (_this: MyPlugin) => {
   _this.Os = process.platform
+}
+
+const readFiles = async (_this: MyPlugin) => {
+  // Current opened file
+  console.log((_this.app.workspace as any)?.lastActiveFile.path)
+  console.log((_this.app.vault.adapter as any)?.basePath)
 }
 
 class SampleModal extends Modal {
